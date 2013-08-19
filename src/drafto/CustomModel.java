@@ -1,0 +1,288 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package drafto;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Random;
+import javax.swing.table.AbstractTableModel;
+/**
+ *
+ * @author cbachich
+ */
+public class CustomModel extends AbstractTableModel {
+  
+  /******************
+   * Static Values  *
+   * ****************/
+  public static int ROWS            = 12;
+  public static int COLUMNS         = 7;
+  public static int TEAM_NAME_COL   = 0;
+  public static int FIRST_PICK_COL  = 1;
+  public static int LAST_PICK_COL   = 5;
+  public static int DRAFT_ORDER_COL = 6;
+  public static String PICKED = "!";
+  
+  /******************
+   * Table Contents *
+   * ****************/
+  private String[] columnNames = new String[] {
+    "Team", "Pick 1", "Pick 2", "Pick 3", "Pick4", "Pick 5", "Draft Order"
+  };
+
+  private Object[][] data = new Object[][]  {
+    {"8-Bit Warriors",      new Integer(7), new Integer(10), new Integer(1), new Integer(1), new Integer(4), null},
+    {"B.A.M.F.",            new Integer(2), new Integer(4),  new Integer(1), new Integer(7), new Integer(5), null},
+    {"pig skin Dominator",  new Integer(7), new Integer(3),  new Integer(7), new Integer(6), new Integer(4), null},
+    {"ExCuse",              new Integer(9), new Integer(8),  new Integer(3), new Integer(1), new Integer(4), null},
+    {"Tonya's Got This!",   new Integer(7), new Integer(5),  new Integer(1), new Integer(5), new Integer(7), null},
+    {"2010 Champ.",         new Integer(4), new Integer(3),  new Integer(7), new Integer(9), new Integer(1), null},
+    {"Victorious Secret",   new Integer(2), new Integer(6),  new Integer(5), new Integer(9), new Integer(4), null},
+    {"3 uraines",           new Integer(4), new Integer(4),  new Integer(4), new Integer(4), new Integer(4), null},
+    {"Ravage",              new Integer(2), new Integer(4),  new Integer(2), new Integer(7), new Integer(8), null},
+    {"Sweating Bullets",    new Integer(9), new Integer(1),  new Integer(2), new Integer(8), new Integer(4), null},
+  };
+  
+/*  private Object[][] data = new Object[][]  {
+    {"8-Bit Warriors",    new Integer(1), new Integer(6), new Integer(1), new Integer(9), new Integer(7), null},
+    {"Furious Kittens",   new Integer(2), new Integer(4), new Integer(3), new Integer(1), new Integer(5), null},
+    {"Lindstrom Legends", new Integer(6), new Integer(9), new Integer(1), new Integer(2), new Integer(9), null},
+    {"Fire Birds",        new Integer(7), new Integer(3), new Integer(7), new Integer(6), new Integer(4), null},
+    {"Pourjavaheri",      new Integer(7), new Integer(6), new Integer(3), new Integer(4), new Integer(9), null},
+    {"Bachicha",          new Integer(5), new Integer(7), new Integer(4), new Integer(5), new Integer(2), null},
+    {"Leonard",           new Integer(5), new Integer(7), new Integer(1), new Integer(7), new Integer(5), null},
+    {"Uraine",            new Integer(4), new Integer(4), new Integer(4), new Integer(4), new Integer(4), null},
+  };*/
+  
+  // Keeps track of which rows have picks available
+  private boolean[] active;
+  private int pickActive[];
+  private int draftOrder;
+  private int teamsActive;
+     
+  /******************
+   * Global Values  *
+   * ****************/
+  private boolean locked;
+  private Console console;
+  
+  public CustomModel(Console console) {
+    this.locked = false;
+    this.console = console;
+    draftOrder = 1;
+    teamsActive = 0;
+  }
+  
+  /******************
+   * Procedures     *
+   * ****************/
+  @Override
+  public int getColumnCount() {
+      return columnNames.length;
+  }
+
+  @Override
+  public int getRowCount() {
+      return data.length;
+  }
+
+  @Override
+  public String getColumnName(int col) {
+      return columnNames[col];
+  }
+
+  @Override
+  public Object getValueAt(int row, int col) {
+      return data[row][col];
+  }
+
+//  @Override
+//  public Class getColumnClass(int c) {
+//      return types[c];
+//  }
+
+  /*
+   * Don't need to implement this method unless your table's
+   * editable.
+   */
+  @Override
+  public boolean isCellEditable(int row, int col) {
+      //Note that the data/cell address is constant,
+      //no matter where the cell appears onscreen.
+      if ((col == DRAFT_ORDER_COL) || locked) {
+          return false;
+      } else {
+          return true;
+      }
+  }
+  
+  /*
+   * Don't need to implement this method unless your table's
+   * data can change.
+   */
+  @Override
+  public void setValueAt(Object value, int row, int col) {
+    String valueS = value.toString();
+    
+    // If this is the "!" that indicates a pick number has been picked, don't
+    // convert it to Integer
+    if( (col == TEAM_NAME_COL) || valueS.equals(PICKED) ) {
+      data[row][col] = valueS;
+    }
+    // Otherwise this needs to be converted to an Integer
+    else {
+      data[row][col] = Integer.parseInt(valueS);
+    }
+    fireTableCellUpdated(row, col);
+    
+  }
+  
+  // Lock the cells from editing
+  public void lockCells() {
+    locked = true;
+  }
+  
+  // Unlock the cells for editing
+  public void unlockCells() {
+    locked = false;
+  }
+  
+  // Check the table contains good values
+  public boolean isTableGood() {
+    boolean passed = true;
+    active = new boolean[ROWS];
+    pickActive = new int[ROWS];
+    
+    // Step through each row for error checking
+    for (int row = 0; row < ROWS; row++) {
+      // Start by checking if the team name is empty. If it is, then don't check
+      // the draft numbers
+      String name = getTeamName(row);
+      
+      // If there is no team name then we'll move onto the next row
+      if (name.isEmpty()) {
+        continue;
+      } 
+      
+      // Check that each of the pick number is between the set values
+      int count = 1;
+      for(int pickCol = FIRST_PICK_COL; pickCol <= LAST_PICK_COL; pickCol++) {
+        if(!isPickGood(row,pickCol)) {
+          console.write("Pick #" + count + " for Team " + name + 
+                  " is not valid");
+          passed = false;
+        } else {
+          // Indicate that this row is good by activating it
+          active[row] = true;
+          
+          // Also set the first pick as the active one
+          pickActive[row] = FIRST_PICK_COL;
+          
+          // Add the team to the teams active for tracking
+          teamsActive++;
+        }
+        count++;
+      }
+    }
+    
+    return passed;
+  }
+  
+  // Takes a pick and determines which teams have it
+  public void makePicks(int pick) {
+    // Save any finishers to perform tie breakers
+    ArrayList<Integer> finished = new ArrayList();
+    
+    // Loop through each active row to determine if it's pick should be checked
+    for(int row = 0; row < ROWS; row++) {
+      // Move onto the next row if this row is not active
+      if(!active[row]) {
+        continue;
+      }
+      
+      // Check if the pick matches the pick value
+      int pickCol = pickActive[row];
+      if(pick == getPickValue(row,pickCol)) {
+        // If this was the final pick, assign a draft spot
+        if(pickCol == LAST_PICK_COL) {
+          active[row] = false;
+          setValueAt(PICKED, row, pickCol);
+          
+          // Add this row as finished in case a tie breaker is required
+          finished.add(row);
+          
+          teamsActive--;
+          continue;
+        }
+        
+        // Set the pick to an exclamation to indicate it's been picked
+        setValueAt(PICKED, row, pickCol);
+        
+        // Change the active pick column to the next
+        pickActive[row]++;
+      }
+    }
+    
+    // If any teams finished, tie breaking is in order
+    if(finished.size() > 0) {
+      Random random = new Random();
+      
+      // Loop through each of the tied teams and decide a winner
+      while(finished.size() > 1) {
+        int teamRow = random.nextInt(finished.size());
+        setValueAt(draftOrder++, finished.get(teamRow), DRAFT_ORDER_COL);
+        finished.remove(teamRow);
+      }
+      
+      // Finally set the last team
+      setValueAt(draftOrder++, finished.get(0), DRAFT_ORDER_COL);
+    }
+  }
+  
+  // Returns whether their are any active teams remaining
+  public boolean areTeamsActive() {
+    if(teamsActive > 0) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  public void loadPicks(File file) {
+    console.write("Loading file: " + file.getName());
+    System.out.println("File path: " + file.getAbsolutePath());
+  }
+  
+  // Return the team name in the passed in row
+  private String getTeamName(int row) {
+    try {
+      return getValueAt(row, TEAM_NAME_COL).
+              toString().trim();
+    } catch(Exception ex) {
+      return "";
+    }
+  }
+  
+  // Checks if the pick cell is good
+  private boolean isPickGood(int row, int col) {
+    try {
+      int pick = getPickValue(row, col);
+      if( (pick >= DraftoMachine.MIN) && (pick <= DraftoMachine.MAX)) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    } catch(Exception ex) {
+      return false;
+    }
+  }
+   
+  // Return the pick value in the row and col
+  private int getPickValue(int row, int col) {
+    return (Integer)getValueAt(row, col);
+  }
+  
+}
