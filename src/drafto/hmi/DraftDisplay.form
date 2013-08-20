@@ -26,7 +26,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="draftoScrollPane" max="32767" attributes="0"/>
-                  <Component id="buttonPanel" alignment="0" max="32767" attributes="0"/>
+                  <Component id="buttonPanel" alignment="0" pref="0" max="32767" attributes="0"/>
                   <Component id="pickPanel" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -70,7 +70,7 @@
             <Property name="text" type="java.lang.String" value="Resume"/>
             <Property name="enabled" type="boolean" value="false"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[80, 30]"/>
+              <Dimension value="[100, 30]"/>
             </Property>
           </Properties>
           <Events>

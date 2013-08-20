@@ -104,7 +104,7 @@ public class DraftDisplay extends javax.swing.JFrame {
 
     resumeButton.setText("Resume");
     resumeButton.setEnabled(false);
-    resumeButton.setPreferredSize(new java.awt.Dimension(80, 30));
+    resumeButton.setPreferredSize(new java.awt.Dimension(100, 30));
     resumeButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         resumeDrafto(evt);
@@ -168,7 +168,7 @@ public class DraftDisplay extends javax.swing.JFrame {
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addComponent(draftoScrollPane)
-          .addComponent(buttonPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(buttonPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
           .addComponent(pickPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         .addContainerGap())
     );
