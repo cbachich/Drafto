@@ -134,6 +134,7 @@ public class CustomModel extends AbstractTableModel {
   // Check the table contains good values
   public boolean isTableGood() {
     boolean passed = true;
+    int numberOfTeams = 0;
     active = new boolean[ROWS];
     pickActive = new int[ROWS];
     
@@ -147,6 +148,9 @@ public class CustomModel extends AbstractTableModel {
       if (name.isEmpty()) {
         continue;
       } 
+      else {
+        numberOfTeams++;
+      }
       
       // Check that each of the pick number is between the set values
       int count = 1;
@@ -167,6 +171,11 @@ public class CustomModel extends AbstractTableModel {
         }
         count++;
       }
+    }
+    
+    if (numberOfTeams < 2) {
+      console.write("Error: Need at least 2 teams to start.");
+      passed = false;
     }
     
     return passed;
