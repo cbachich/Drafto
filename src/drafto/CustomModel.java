@@ -4,7 +4,11 @@
  */
 package drafto;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.swing.table.AbstractTableModel;
@@ -252,7 +256,13 @@ public class CustomModel extends AbstractTableModel {
   
   public void loadPicks(File file) {
     console.write("Loading file: " + file.getName());
-    System.out.println("File path: " + file.getAbsolutePath());
+    PickFileReader reader = new PickFileReader(ROWS, COLUMNS);
+    if(reader.Read(file)) {
+      data = reader.Table();
+    }
+    else {
+      console.write(reader.Error());
+    }
   }
   
   // Return the team name in the passed in row

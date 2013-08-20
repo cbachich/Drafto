@@ -242,6 +242,7 @@ public class DraftDisplay extends javax.swing.JFrame {
     int returnVal = fc.showOpenDialog(this);
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       pickModel.loadPicks(fc.getSelectedFile());
+      pickModel.fireTableDataChanged();
     }
   }//GEN-LAST:event_LoadPicks
   
